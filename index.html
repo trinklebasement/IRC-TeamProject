@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" ng-app>
   <head>
-    <title>Chat Example</title>
+    <title>Chat-Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
@@ -9,50 +9,81 @@
       body {
         padding-top: 60px;
       }
+      
+#popUp{
+ margin: 0; 
+ margin-left: 10%;
+ margin-right: 70%;
+ margin-top: 70px;
+ padding-top: 10px;
+ width: 1200%;
+ height: 400px;
+ position: absolute;
+ background: #FFFFFF;
+ border: solid #909090 2px;
+ z-index: 9;
+ font-family: arial;
+ visibility: hidden;
+ top: 50%;
+ left: 50%;
+ margin-left: -600px; 
+ margin-top: -225px;
+ }
+ 
+#popUp2{
+  margin: 0; 
+  margin-right: 70%; 
+  padding-top: 10px; 
+  width: 1200px; 
+  height: 450px; 
+  position: absolute; 
+  background: #FFFFFF;
+  border: solid #909090 2px; 
+  z-index: 9; 
+  font-family: arial; 
+  visibility: hidden;
+  top: 50%;
+  left: 50%;
+  margin-left: -600px; 
+  margin-top: -225px; 
+ }
 
-#popupbox{
-margin: 0; 
-margin-left: 10%; 
-margin-right: 70%;
-margin-top: 70px; 
-padding-top: 10px; 
-width: 20%; 
-height: 170px; 
-position: absolute; 
-background: #FFFFFF; 
-border: solid #909090 2px; 
-z-index: 9; 
-font-family: arial; 
-visibility: hidden; 
-}
-</style>
-<script language="JavaScript" type="text/javascript">
-function login(showhide){
+ </style>
+ <script language="JavaScript" type="text/javascript">
+ function login(showhide){
+ if(showhide == "show"){
+     document.getElementById('popUp').style.visibility="visible";
+ }else if(showhide == "hide"){
+     document.getElementById('popUp').style.visibility="hidden"; 
+ }
+ }
+ 
+function searchPopUp2(showhide){
 if(showhide == "show"){
-    document.getElementById('popupbox').style.visibility="visible";
-}else if(showhide == "hide"){
-    document.getElementById('popupbox').style.visibility="hidden"; 
+    document.getElementById('popUp2').style.visibility="visible";
+}
+else if(showhide == "hide"){
+    document.getElementById('popUp2').style.visibility="hidden"; 
 }
 }
-
-
+ 
       function ChatController($scope) {
         var socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
-
-        //var socket = io.connect();
 
         $scope.messages = [];
         $scope.roster = [];
         $scope.name = '';
         $scope.text = '';
+        $scope.searchInput = ' ';
+        $scope.searchOutput = [];
 
         socket.on('connect', function () {
-          console.log('connected');
+          console.log('connected')
           $scope.setName();
         });
 
         socket.on('message', function (msg) {
-          console.log(msg);
+          console.log(msg)
           $scope.messages.push(msg);
           $scope.$apply();
         });
@@ -62,66 +93,94 @@ if(showhide == "show"){
           $scope.roster = names;
           $scope.$apply();
         });
+        
+        socket.on('searchOutput', function (searchOutput) {
+          console.log(searchOutput);
+          $scope.searchOutput.push(searchOutput);
+          $scope.$apply();
+        });
+        
+        socket.on('loginCheck', function (showhide) {
+          if (showhide == "show"){
+            login("show")
+          }
+          else if (showhide == "hide"){
+            login("hide")
+          }
+          $scope.$apply();
+        });
 
         $scope.send = function send() {
           console.log('Sending message:', $scope.text);
           socket.emit('message', $scope.text);
           $scope.text = '';
         };
+        
+        $scope.search = function search() {
+          console.log('Searching for:', $scope.info);
+          socket.emit('search', $scope.info);
+          $scope.info = '';
+          searchPopUp2('show')
+          $scope.$apply();
+        };
 
         $scope.setName = function setName() {
           socket.emit('identify', $scope.name);
         };
-        $scope.setName2 = function setName2() {
-          
-          socket.emit('identify', $scope.name2);
-          $scope.name = $scope.name2;
+        
+        $scope.set2 = function set2(){
+          socket.emit('identify', $scope.set2);
+          $scope.name = $scope.set2;
           $scope.$apply();
-        };
-
-        $scope.processLogin = function processLogin() {
-          console.log("Trying to log in");
-          login('hide');
-          socket.emit('login', $scope.password);
-        };
-
-
-
+        }
+        
+        $scope.clearSearch = function clearSearch(){
+          console.log('Clearing search results');
+          searchPopUp2('hide')
+          $scope.searchResults = [];
+          $scope.$apply();
+        }
+        $scope.login_execution = function login_execution(){
+          console.log("Attempt Login");
+          socket.emit('login', {'username' : $scope.name, 'password': $scope.password});
+        }
       }
     </script>
   </head>
-  <body onload="javascript:login('show')">
-    
-
-    
-    
-    
-    
-    
+  <body onload = "javascript:login('show')"></body>
     <div class="container" ng-controller="ChatController">
-      
-      
-          <div id="popupbox"> 
-<form ng-submit="processLogin()">
-<center>Username:</center>
-<center><input type="text"  ng-model="name2" ng-change="setName2()" placeholder="Username" size="14" /></center>
-<center>Password:</center>
-<center><input  ng-model="password" type="password" size="14" /></center>
-<center><input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!password"></center>
-
+      <div id="popUp"> 
+        <form ng-submit="login_execution()">
+          <center>Username:</center>
+          <center><input type="text"  ng-model="set2" ng-change="set2()" placeholder="Username" size="14" name= "username"/></center>
+          <center>Password:</center>
+          <center><input  ng-model="password" type="password" size="14" /></center>
+          <center><input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!password"></center>
+        </form> 
+      </div>
+      <div id="popUp2"> 
+<form ng-submit="clearSearch()">
+<center><h1>Search Results</h1>
+<table class="table table-striped table-bordered" align=center>
+  <thead>
+    <tr>
+      <th class="span2">Name</th>
+      <th class="span7">Text</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="result in searchResults">
+      <td class="span2" ng-bind="result.name"></td>
+      <td class="span7" ng-bind="result.text"></td>
+    </tr>
+  </tbody>
+</table></center>
+<center><input type="submit" class="span1 btn btn-primary" value="Close"></center>
 </form>
-<br />
-
-</div> 
-
       
       
-      
-      
-      
-      
-      
-      
+      <br />
+    </div> 
       <div class="navbar navbar-fixed-top navbar-inverse">
         <div class="navbar-inner">
           <div class="pull-right">
@@ -130,7 +189,15 @@ if(showhide == "show"){
         </div>
       </div>
       <div class="page-header">
-        <h1>Chat Example</h1>
+        <h1>Chat-Chat</h1>
+      </div>
+      <div class="row controls">
+        <form ng-submit="search()">
+          <div class="input-append span12" align='right'>
+            <input type="text" class="span2" ng-model='searchText' placeholder="Search">
+            <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!searchText">
+          </div>
+        </form>
       </div>
       <div class="row">
         <div class="span3">
@@ -139,7 +206,6 @@ if(showhide == "show"){
             <li ng-repeat="user in roster" ng-bind="user">
             </li>
           </ul>
-          
         </div>
         <div class="span9">
           <table class="table table-striped table-bordered">
@@ -158,8 +224,8 @@ if(showhide == "show"){
           </table>
           <div class="row controls">
             <form ng-submit="send()">
-              <div class="span2" ><input type="text" class="input-block-level" ng-model="name" readonly="readonly" placeholder="Your Name"></div>
-              <div class="input-append span7">
+              <div class="span2"><input type="text" class="input-block-level" ng-model="name" ng-change="setName()" placeholder="Your Name"></div>
+              <div class="input-append span7" align = "right">
                 <input type="text" class="span6" ng-model="text" placeholder="Message">
                 <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text">
               </div>
@@ -168,7 +234,7 @@ if(showhide == "show"){
         </div>
       </div>
     </div>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
