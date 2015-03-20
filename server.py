@@ -5,7 +5,7 @@ from flask import Flask, session
 from flask.ext.socketio import SocketIO, emit
 
 app = Flask(__name__, static_url_path='')
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+app.config['SECRET_KEY'] = 'secret!'
 app.debug = True
 
 socketio = SocketIO(app)
@@ -77,9 +77,9 @@ def on_login(info):
     conn = connectToDB()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     user = info['username']
-    passw = info['password']
+    password = info['password']
     login_execution = "SELECT * FROM users WHERE username = %s AND password = crypt(%s, password)"
-    cur.execute(login_execution, (user, passw))
+    cur.execute(login_execution, (user, password))
     output = cur.fetchone()
     
     if output:

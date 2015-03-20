@@ -32,6 +32,8 @@
  
 #popUp2{
   margin: 0; 
+  margin-left: -400px; 
+  margin-top: -225px;
   margin-right: 70%; 
   padding-top: 10px; 
   width: 1200px; 
@@ -44,8 +46,6 @@
   visibility: hidden;
   top: 50%;
   left: 50%;
-  margin-left: -600px; 
-  margin-top: -225px; 
  }
 
  </style>
@@ -97,16 +97,6 @@ else if(showhide == "hide"){
         socket.on('searchOutput', function (searchOutput) {
           console.log(searchOutput);
           $scope.searchOutput.push(searchOutput);
-          $scope.$apply();
-        });
-        
-        socket.on('loginCheck', function (showhide) {
-          if (showhide == "show"){
-            login("show")
-          }
-          else if (showhide == "hide"){
-            login("hide")
-          }
           $scope.$apply();
         });
 
